@@ -1,6 +1,12 @@
 # 4d-plugin-ping
 an alternative to NET_Ping (Internet Commands)
 
+##Platform
+
+| carbon | cocoa | win32 | win64 |
+|:------:|:-----:|:---------:|:---------:|
+|🆗|🆗|🆗|🆗|
+
 Example
 ---
 ```
