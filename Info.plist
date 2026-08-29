@@ -14,8 +14,8 @@
 	<string>4DCB</string>
 	<key>CFBundleSignature</key>
 	<string>4D06</string>
-	<key>CFBundleVersion</key>
-	<string>14.3</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.1.3</string>
 	<key>CSResourcesFileMapped</key>
 	<true/>
 </dict>
