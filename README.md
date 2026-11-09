@@ -14,6 +14,75 @@ The Ping plugin adds a single ICMP-based network reachability command to 4D. It 
 
 **Platforms:** macOS, Windows
 
+## Source versions and manual publication
+
+**Bump version** and **Build** are independent manual Actions workflows. Select
+the intended branch in the Actions UI and choose patch, minor or major in Bump
+version. It checks the immutable dispatch commit against that exact remote
+branch, commits source metadata only, and pushes one direct-child commit. It
+does not create tags or start Build. A moved, deleted or rewound branch, including
+a same-result race, is rejected by the mandatory executable pre-push guard; a
+failed bump may leave an unpushed commit in the runner. Dispatch again from the
+intended current branch rather than forcing a push.
+
+Build has **no inputs**. Select the branch or existing ref to build in the
+Actions UI; every job checks out the dispatch's immutable `github.sha`, not a tag
+derived from an input. There is no main-only restriction. Build reads strict
+`X.Y.Z` source metadata, then builds Windows x64 and macOS arm64 + x86_64,
+merges the bundle, signs and verifies it, notarizes ZIP and DMG, and staples the
+DMG before publication. Assets remain `Ping-X.Y.Z.zip` and `Ping-X.Y.Z.dmg`,
+containing the cross-platform `test/Plugins/Ping.bundle` layout.
+
+The source authority is the consistent `MARKETING_VERSION` in all six
+`Ping.xcodeproj/project.pbxproj` configurations, coordinated with
+`CURRENT_PROJECT_VERSION`, source `Info.plist` and
+`English.lproj/InfoPlist.strings`. The explicit coordinated contract added in
+commit `057efd8` overrides its buggy marketing-first implementation. The
+migration keeps existing version **1.1.5**, repairing only six stale current
+settings (1.1.3) and localized version literals (1.0); it does not increment a
+release. Future bumps co-update applicable literal keys, preserve valid Xcode
+references, and do not add absent `CFBundleVersion`. Prebuilt bundles in
+`Ping.4dbase`, dependencies, 4D manifests, localization/schema counters, BOMs,
+file modes and line endings are not rewritten.
+
+Publication is serialized repository-wide across branches without cancelling
+running builds. Both the early preflight and final check immediately after all
+native/signing/notary/stapling gates reject existing remote tags or matching
+draft/published releases. Release checks use authenticated, validated,
+paginated listings; API/authentication/network/404/malformed responses fail
+closed, including failures on later pages. Only complete successful absence
+permits creation. The tag is created once at the exact selected SHA and remotely
+verified, then a new published, non-prerelease release is created with the
+original empty-body notes policy. Each asset is uploaded separately to the
+returned new release ID. Same-SHA tag races are errors, not success.
+
+**Partial-state recovery:** there is no overwrite, deletion, rollback, retry or
+automatic cleanup. A failed release creation retains the new tag; an upload
+failure retains the tag, release and any earlier assets. Inspect the run log,
+selected SHA, remote tag, release (including drafts) and assets before deciding
+on manual recovery. Rerunning Build for that version intentionally refuses
+existing state. Any deliberate repair/removal requires a separate authorized
+manual decision; otherwise bump source to a new version and dispatch Build.
+
+Native prerequisites are unchanged: checked-in 4D Plugin API and resources,
+Windows MSBuild/v143/Windows SDK 10.0 with OS ICMP/Winsock libraries, and macOS
+Xcode/SDK frameworks (including the legacy Carbon timing calls). The project
+retains legacy Xcode configurations and 11.5 project settings while the workflow
+explicitly supplies deployment target 11.0. SDK/architecture compatibility and
+real-host ICMP behavior require native validation, not a bypass. The existing
+Windows canonical-case normalization, universal-binary checks and all signing,
+notarization and stapling gates remain mandatory. Required secret **names**
+remain `APPLE_DEVELOPER_ID_CERTIFICATE`,
+`APPLE_DEVELOPER_ID_CERTIFICATE_PASSWORD`, `KEYCHAIN_PASSWORD`,
+`NOTARYTOOL_APPLE_ID`, `NOTARYTOOL_TEAM_ID`, and `NOTARYTOOL_PASSWORD`.
+
+Local workflow regression checks (no native build or signing):
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s .github/tests -p 'test_*.py'
+actionlint .github/workflows/*.yml
+```
+
 ---
 
 ## Requirements & platform notes
