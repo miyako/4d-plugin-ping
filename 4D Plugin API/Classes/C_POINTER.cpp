@@ -7,6 +7,7 @@
  */
 
 #include "C_POINTER.h"
+#include <stdexcept>
 
 void C_POINTER::fromParamAtIndex(PackagePtr pParams, uint16_t index)
 {	
@@ -73,6 +74,8 @@ void C_POINTER::getVariable(PA_Variable *variable)
 		case ePK_PointerToVariable:	
 			
 			v = PA_GetPointerValue(this->_ptr);
+			if(PA_GetLastError() != eER_NoErr)
+				throw std::runtime_error("4D pointer value lookup failed");
 			//should Call PA_ClearVariable to clear the returned PA_Variable.
 			//see 4DPluginAPI.h
 			variable->fType		= v.fType;
@@ -84,6 +87,7 @@ void C_POINTER::getVariable(PA_Variable *variable)
 			memcpy(variable->uValue.fVariableDefinition.fName,
 				   v.uValue.fVariableDefinition.fName,
 				   sizeof(v.uValue.fVariableDefinition.fName));
+			PA_ClearVariable(&v);
 			
 			break;
 			

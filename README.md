@@ -83,6 +83,14 @@ PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s .github/tests -p 'test
 actionlint .github/workflows/*.yml
 ```
 
+The [native ownership audit](.github/tests/ownership-audit.md) records the exact
+bundled SDK, compiled and dormant helper inventory, fixes, and execution limits.
+On macOS, `python3 .github/tests/test_ownership.py -v` compiles the actual sources
+with the complete unchanged SDK under ASan/UBSan. All network and relevant
+platform boundaries are replaced before compilation with synthetic offline
+stubs; it does not run the project build or send packets. The separate
+**Ownership** workflow runs only this unsigned harness.
+
 ---
 
 ## Requirements & platform notes
